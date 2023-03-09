@@ -9,7 +9,7 @@
 	</head>
 	<body>
 		<h1 class="title">todos</h1>
-		<div class="app">
+		<div class="app" data-empty="true">
 			<header class="app__header">
 				<div class="header">
 					<div class="header__toggler">
@@ -38,12 +38,14 @@
 							</label>
 						</div>
 					</div>
-					<input class="header__textfield" type="text" placeholder="What needs to be done?" />
+					<form class="header__form">
+						<input class="header__textfield" type="text" placeholder="What needs to be done?" />
+					</form>
 				</div>
 			</header>
 			<main class="app__body">
 				<div class="todos">
-					<ul class="todos__list">
+					<!-- <ul class="todos__list">
 						<li class="todos__item">
 							<span class="item-todo">
 								<span class="item-todo__checkbox">
@@ -108,7 +110,7 @@
 								<input class="item-todo__input-edit" type="text" value="test" />
 							</span>
 						</li>
-					</ul>
+					</ul> -->
 				</div>
 			</main>
 			<footer class="app__footer">

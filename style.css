@@ -37,6 +37,14 @@ body {
 	background: #ffffff;
 	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 20%), 0 25px 50px 0 rgb(0 0 0 / 10%);
 }
+.app[data-empty="true"] .app__body,
+.app[data-empty="true"] .app__footer {
+	display: none;
+}
+.app[data-empty="true"] .toggle-all {
+	opacity: 0;
+	visibility: hidden;
+}
 .app__header {
 }
 .app__body {
@@ -46,6 +54,7 @@ body {
 .header {
 	display: flex;
 	background: rgba(0, 0, 0, 0.003);
+	border-bottom: 1px solid rgba(153, 153, 153, 0.25);
 	box-shadow: inset 0 -2px 1px rgb(0 0 0 / 3%);
 }
 .header__toggler {
@@ -55,13 +64,16 @@ body {
 	align-items: center;
 	justify-content: center;
 }
+.header__form {
+	flex: 1 1 100%;
+}
 .header__textfield {
 	width: 100%;
 	padding: 16px;
 	font-size: 1.5rem;
 	color: var(--main-dark-color);
 	border: none;
-	background-color: rgba(0, 0, 0, 0.003);
+	background: transparent;
 }
 .header__textfield:focus {
 	outline: none;
@@ -92,6 +104,7 @@ body {
 	min-height: 100%;
 	cursor: pointer;
 	color: var(--main-gray-color);
+	transition: color 0.2s ease-in-out;
 }
 
 /* style for todos */
@@ -144,6 +157,7 @@ body {
 	font-weight: 300;
 	line-height: 120%;
 	color: var(--main-dark-color);
+	transition: color 0.3s ease-in-out;
 }
 .item-todo__btn-remove {
 	display: block;
@@ -156,12 +170,14 @@ body {
 	opacity: 0;
 	visibility: hidden;
 	transform: scale(0);
-	transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out;
+	transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out, transform 0.3s ease-in-out,
+		color 0.3s ease-in-out;
 }
 .item-todo__btn-remove svg {
 	min-width: 100%;
 	min-height: 100%;
 	color: inherit;
+	pointer-events: none;
 }
 .item-todo__btn-remove:hover {
 	color: var(--hover-red-color);
@@ -208,6 +224,7 @@ body {
 	background-size: cover;
 	background-repeat: no-repeat;
 	cursor: pointer;
+	transition: background-image 0.2s ease-in-out;
 }
 
 /* footer */
@@ -233,6 +250,7 @@ body {
 	pointer-events: none;
 }
 .footer__left {
+	min-width: 70px;
 	font-size: 0.875rem;
 	line-height: 1.2;
 	color: #777777;
