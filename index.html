@@ -11,16 +11,153 @@
 		<h1 class="title">todos</h1>
 		<div class="app">
 			<header class="app__header">
-				<div class="header-app">
-					<div class="header-app__toggler">
-						<label class="toggle-all">
-							<input class="toggle-all__input" type="checkbox" />
-						</label>
-						<input class="main-textfield" type="text" placeholder="What needs to be done?" />
+				<div class="header">
+					<div class="header__toggler">
+						<div class="toggle-all">
+							<input class="toggle-all__input visually-hidden" type="checkbox" id="toggle-all" />
+							<label class="toggle-all__label" for="toggle-all">
+								<svg
+									fill="#000000"
+									height="18"
+									width="18"
+									version="1.1"
+									id="Layer_1"
+									xmlns="http://www.w3.org/2000/svg"
+									xmlns:xlink="http://www.w3.org/1999/xlink"
+									viewBox="0 0 330 330"
+									xml:space="preserve"
+								>
+									<path
+										id="XMLID_225_"
+										d="M325.607,79.393c-5.857-5.857-15.355-5.858-21.213,0.001l-139.39,139.393L25.607,79.393
+	c-5.857-5.857-15.355-5.858-21.213,0.001c-5.858,5.858-5.858,15.355,0,21.213l150.004,150c2.813,2.813,6.628,4.393,10.606,4.393
+	s7.794-1.581,10.606-4.394l149.996-150C331.465,94.749,331.465,85.251,325.607,79.393z"
+										fill="currentColor"
+									/>
+								</svg>
+							</label>
+						</div>
 					</div>
+					<input class="header__textfield" type="text" placeholder="What needs to be done?" />
 				</div>
 			</header>
-			<main class="app__body"></main>
+			<main class="app__body">
+				<div class="todos">
+					<ul class="todos__list">
+						<li class="todos__item">
+							<span class="item-todo">
+								<span class="item-todo__checkbox">
+									<span class="checkbox">
+										<input class="checkbox__input visually-hidden" type="checkbox" id="todo-1" />
+										<label class="checkbox__label" for="todo-1"></label>
+									</span>
+								</span>
+								<span class="item-todo__value">Lorem ipsum dolor sit amet.</span>
+								<button class="item-todo__btn-remove">
+									<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"
+											fill="currentColor"
+										/>
+									</svg>
+								</button>
+							</span>
+						</li>
+						<li class="todos__item">
+							<span class="item-todo completed focused">
+								<span class="item-todo__checkbox">
+									<span class="checkbox">
+										<input class="checkbox__input visually-hidden" type="checkbox" id="todo-2" />
+										<label class="checkbox__label" for="todo-2"></label>
+									</span>
+								</span>
+								<span class="item-todo__value"
+									>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet consectetur adipisicing
+									elit. Neque, provident!</span
+								>
+								<button class="item-todo__btn-remove">
+									<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"
+											fill="currentColor"
+										/>
+									</svg>
+								</button>
+							</span>
+						</li>
+						<li class="todos__item">
+							<span class="item-todo editing">
+								<span class="item-todo__checkbox">
+									<span class="checkbox">
+										<input class="checkbox__input visually-hidden" type="checkbox" id="todo-3" />
+										<label class="checkbox__label" for="todo-3"></label>
+									</span>
+								</span>
+								<span class="item-todo__value"
+									>Lorem ipsum dolor sit amet. Lorem ipsum dolor sit amet consectetur adipisicing
+									elit. Neque, provident!</span
+								>
+								<button class="item-todo__btn-remove">
+									<svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+										<path
+											d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"
+											fill="currentColor"
+										/>
+									</svg>
+								</button>
+								<input class="item-todo__input-edit" type="text" value="test" />
+							</span>
+						</li>
+					</ul>
+				</div>
+			</main>
+			<footer class="app__footer">
+				<div class="footer">
+					<p class="footer__left">2 items left</p>
+					<div class="footer__filters">
+						<ul class="todo-filters">
+							<li class="todo-filters__item">
+								<span class="todo-filter">
+									<input
+										class="todo-filter__input visually-hidden"
+										id="todo-filter-all"
+										type="radio"
+										value="all"
+										name="todo-filters"
+										checked
+									/>
+									<label class="todo-filter__label" for="todo-filter-all">All</label>
+								</span>
+							</li>
+							<li class="todo-filters__item">
+								<span class="todo-filter">
+									<input
+										class="todo-filter__input visually-hidden"
+										id="todo-filter-active"
+										type="radio"
+										value="active"
+										name="todo-filters"
+									/>
+									<label class="todo-filter__label" for="todo-filter-active">Active</label>
+								</span>
+							</li>
+							<li class="todo-filters__item">
+								<span class="todo-filter">
+									<input
+										class="todo-filter__input visually-hidden"
+										id="todo-filter-completed"
+										type="radio"
+										value="completed"
+										name="todo-filters"
+									/>
+									<label class="todo-filter__label" for="todo-filter-completed">Completed</label>
+								</span>
+							</li>
+						</ul>
+					</div>
+					<button class="footer__btn-clear-completed">Clear completed</button>
+				</div>
+			</footer>
 		</div>
 		<script src="script.js"></script>
 	</body>
