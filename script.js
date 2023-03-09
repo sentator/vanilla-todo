@@ -139,11 +139,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (targetElement.classList.contains("item-todo__btn-remove")) {
 			const id = targetElement.closest(".item-todo").getAttribute("data-todo");
 
-			todos = todos.filter((todo) => todo.id !== id);
+			if (confirm("Do you want to remove the todo?")) {
+				todos = todos.filter((todo) => todo.id !== id);
 
-			renderTodoList(todos, todosContainer);
-			updateTodosLeftInfo(todos);
-			updateTogglerCheckboxStatus(todos);
+				renderTodoList(todos, todosContainer);
+				updateTodosLeftInfo(todos);
+				updateTogglerCheckboxStatus(todos);
+			}
 		}
 
 		// handle click on the toggle-all checkbox
