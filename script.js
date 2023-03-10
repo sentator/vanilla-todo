@@ -256,34 +256,40 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function handleTodoEdit(event) {
+		event.preventDefault();
+
 		const targetElement = event.target;
 
 		if (targetElement && targetElement.matches(".item-todo")) {
 			const todoId = targetElement.getAttribute("data-todo");
 			const { value } = todos.find((todo) => todo.id === todoId);
+			const formEditElement = document.createElement("form");
 			const inputEditElement = document.createElement("input");
 
+			formEditElement.classList.add("item-todo__form-edit");
 			inputEditElement.setAttribute("type", "text");
 			inputEditElement.classList.add("item-todo__input-edit");
 			inputEditElement.value = value;
 
-			targetElement.append(inputEditElement);
+			formEditElement.append(inputEditElement);
+			targetElement.append(formEditElement);
 			targetElement.classList.add("editing");
 			inputEditElement.focus();
 
-			inputEditElement.addEventListener(
-				"blur",
-				() => {
-					const value = inputEditElement.value;
+			const handleInputEditSubmission = (e) => {
+				e.preventDefault();
 
-					todos = todos.map((todo) => {
-						return todo.id === todoId && value ? { ...todo, value } : todo;
-					});
-					updateApp(todos);
-					targetElement.classList.remove("editing");
-				},
-				{ once: true }
-			);
+				const value = inputEditElement.value;
+
+				todos = todos.map((todo) => {
+					return todo.id === todoId && value ? { ...todo, value } : todo;
+				});
+				updateApp(todos);
+				targetElement.classList.remove("editing");
+			};
+
+			inputEditElement.addEventListener("blur", handleInputEditSubmission, { once: true });
+			formEditElement.addEventListener("submit", handleInputEditSubmission, { once: true });
 		}
 	}
 });
