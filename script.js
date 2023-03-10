@@ -11,8 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
 	// getting current filter from the searchParams
 	const searchParams = new URLSearchParams(window.location.search);
-	let filter = searchParams.get("filter");
-	let activeFilter = filter || "all";
+	let activeFilter = searchParams.get("filter") || "all";
 
 	// event listeners
 	headerForm.addEventListener("submit", handleFormSubmit);
@@ -20,13 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	formFilters.addEventListener("change", handleChangeFilter);
 
 	// on first render
-	let filteredTodos = filterTodos(todos, activeFilter);
-
-	renderTodoList(filteredTodos, todosContainer);
-	updateTodosLeftInfo(todos);
-	updateTogglerCheckboxStatus(todos);
+	updateApp(todos);
 	updateActiveFilter(activeFilter);
-	toggleClearCompletedBtn();
 
 	// functions
 	function handleFormSubmit(event) {
@@ -41,12 +35,7 @@ document.addEventListener("DOMContentLoaded", () => {
 				completed: false,
 			});
 
-			const filteredTodos = filterTodos(todos, activeFilter);
-
-			saveTodosToStorage(todos);
-			renderTodoList(filteredTodos, todosContainer);
-			updateTodosLeftInfo(todos);
-			updateTogglerCheckboxStatus(todos);
+			updateApp(todos);
 			event.target.reset();
 		}
 	}
@@ -121,11 +110,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	function updateTogglerCheckboxStatus(todos) {
 		const checkboxElement = app.querySelector(".toggle-all__input");
 
-		if (todos.every((todo) => todo.completed)) {
-			checkboxElement.checked = true;
-		} else {
-			checkboxElement.checked = false;
-		}
+		checkboxElement.checked = todos.every((todo) => todo.completed);
 	}
 
 	function updateActiveFilter(filter) {
@@ -163,13 +148,8 @@ document.addEventListener("DOMContentLoaded", () => {
 					break;
 				}
 			}
-			const filteredTodos = filterTodos(todos, activeFilter);
 
-			saveTodosToStorage(todos);
-			renderTodoList(filteredTodos, todosContainer);
-			updateTodosLeftInfo(todos);
-			updateTogglerCheckboxStatus(todos);
-			toggleClearCompletedBtn();
+			updateApp(todos);
 		}
 
 		// handle click on button-remove inside an item-todo
@@ -179,13 +159,7 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (confirm("Do you want to remove the todo?")) {
 				todos = todos.filter((todo) => todo.id !== id);
 
-				const filteredTodos = filterTodos(todos, activeFilter);
-
-				saveTodosToStorage(todos);
-				renderTodoList(filteredTodos, todosContainer);
-				updateTodosLeftInfo(todos);
-				updateTogglerCheckboxStatus(todos);
-				toggleClearCompletedBtn();
+				updateApp(todos);
 			}
 		}
 
@@ -195,25 +169,15 @@ document.addEventListener("DOMContentLoaded", () => {
 				? todos.map((todo) => ({ ...todo, completed: true }))
 				: todos.map((todo) => ({ ...todo, completed: false }));
 
-			const filteredTodos = filterTodos(todos, activeFilter);
-
-			saveTodosToStorage(todos);
-			renderTodoList(filteredTodos, todosContainer);
-			updateTodosLeftInfo(todos);
-			toggleClearCompletedBtn();
+			updateApp(todos);
 		}
 
 		// handle click on the footer__btn-clear-completed button
 		if (targetElement.classList.contains("footer__btn-clear-completed")) {
 			if (confirm("Do you want to remove competed tasks?")) {
 				todos = todos.filter((todo) => todo.completed === false);
-				const filteredTodos = filterTodos(todos, activeFilter);
 
-				saveTodosToStorage(todos);
-				renderTodoList(filteredTodos, todosContainer);
-				updateTodosLeftInfo(todos);
-				updateTogglerCheckboxStatus(todos);
-				targetElement.classList.remove("visible");
+				updateApp(todos);
 			}
 		}
 	}
@@ -261,5 +225,15 @@ document.addEventListener("DOMContentLoaded", () => {
 			default:
 				return [...todos];
 		}
+	}
+
+	function updateApp(todosList) {
+		const filteredTodos = filterTodos(todosList, activeFilter);
+
+		saveTodosToStorage(todosList);
+		renderTodoList(filteredTodos, todosContainer);
+		updateTodosLeftInfo(todosList);
+		updateTogglerCheckboxStatus(todosList);
+		toggleClearCompletedBtn();
 	}
 });
