@@ -150,7 +150,13 @@ document.addEventListener("DOMContentLoaded", () => {
 				}
 			}
 
-			updateApp(todos);
+			const filteredTodos = filterTodos(todos, activeFilter);
+
+			activeFilter !== "all" ? renderTodoList(filteredTodos, todosContainer) : null;
+			saveTodosToStorage(todos);
+			updateTodosLeftInfo(todos);
+			updateTogglerCheckboxStatus(todos);
+			toggleClearCompletedBtn();
 		}
 
 		// handle click on button-remove inside an item-todo
