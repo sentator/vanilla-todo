@@ -20,7 +20,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	formFilters.addEventListener("change", handleChangeFilter);
 
 	// on first render
-	renderTodoList(todos, todosContainer);
+	let filteredTodos = filterTodos(todos, activeFilter);
+
+	renderTodoList(filteredTodos, todosContainer);
 	updateTodosLeftInfo(todos);
 	updateTogglerCheckboxStatus(todos);
 	updateActiveFilter(activeFilter);
@@ -38,11 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
 				value,
 				completed: false,
 			});
+
+			const filteredTodos = filterTodos(todos, activeFilter);
+
 			saveTodosToStorage(todos);
-			renderTodoList(todos, todosContainer);
+			renderTodoList(filteredTodos, todosContainer);
 			updateTodosLeftInfo(todos);
 			updateTogglerCheckboxStatus(todos);
-			updateActiveFilter(activeFilter);
 			event.target.reset();
 		}
 	}
@@ -76,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 	}
 
-	function renderTodoList(todos, parentElement) {
+	function renderTodoList(todosList, parentElement) {
 		let ul = parentElement.querySelector(".todos__list");
 
 		if (ul) {
@@ -87,16 +91,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			parentElement.append(ul);
 		}
 
-		if (todos && todos.length) {
-			todos.forEach((todo) => {
+		if (todosList && todosList.length) {
+			todosList.forEach((todo) => {
 				const todoElement = createTodoElement(todo);
 				ul.insertAdjacentHTML("beforeend", todoElement);
 			});
-
-			app.setAttribute("data-empty", false);
-		} else {
-			app.setAttribute("data-empty", true);
 		}
+
+		app.setAttribute("data-empty", !todos.length);
 	}
 
 	function updateTodosLeftInfo(todos) {
@@ -134,6 +136,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				button.checked = true;
 			}
 		});
+
+		activeFilter = filter;
 	}
 
 	function handleClickAction(event) {
@@ -159,7 +163,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					break;
 				}
 			}
+			const filteredTodos = filterTodos(todos, activeFilter);
+
 			saveTodosToStorage(todos);
+			renderTodoList(filteredTodos, todosContainer);
 			updateTodosLeftInfo(todos);
 			updateTogglerCheckboxStatus(todos);
 			toggleClearCompletedBtn();
@@ -172,8 +179,10 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (confirm("Do you want to remove the todo?")) {
 				todos = todos.filter((todo) => todo.id !== id);
 
+				const filteredTodos = filterTodos(todos, activeFilter);
+
 				saveTodosToStorage(todos);
-				renderTodoList(todos, todosContainer);
+				renderTodoList(filteredTodos, todosContainer);
 				updateTodosLeftInfo(todos);
 				updateTogglerCheckboxStatus(todos);
 				toggleClearCompletedBtn();
@@ -182,36 +191,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		// handle click on the toggle-all checkbox
 		if (targetElement.classList.contains("toggle-all__input")) {
-			if (targetElement.checked) {
-				todos.forEach((todo, i) => {
-					todos[i] = { ...todo, completed: true };
-				});
-			} else {
-				todos.forEach((todo, i) => {
-					todos[i] = { ...todo, completed: false };
-				});
-			}
+			todos = targetElement.checked
+				? todos.map((todo) => ({ ...todo, completed: true }))
+				: todos.map((todo) => ({ ...todo, completed: false }));
+
+			const filteredTodos = filterTodos(todos, activeFilter);
 
 			saveTodosToStorage(todos);
-			renderTodoList(todos, todosContainer);
+			renderTodoList(filteredTodos, todosContainer);
 			updateTodosLeftInfo(todos);
 			toggleClearCompletedBtn();
 		}
 
 		// handle click on the footer__btn-clear-completed button
 		if (targetElement.classList.contains("footer__btn-clear-completed")) {
-			todos = todos.filter((todo) => todo.completed === false);
+			if (confirm("Do you want to remove competed tasks?")) {
+				todos = todos.filter((todo) => todo.completed === false);
+				const filteredTodos = filterTodos(todos, activeFilter);
 
-			saveTodosToStorage(todos);
-			renderTodoList(todos, todosContainer);
-			updateTodosLeftInfo(todos);
-			updateTogglerCheckboxStatus(todos);
-			targetElement.classList.remove("visible");
+				saveTodosToStorage(todos);
+				renderTodoList(filteredTodos, todosContainer);
+				updateTodosLeftInfo(todos);
+				updateTogglerCheckboxStatus(todos);
+				targetElement.classList.remove("visible");
+			}
 		}
 	}
 
 	function handleChangeFilter(event) {
 		const selectedFilter = event.target.value;
+		const filteredTodos = filterTodos(todos, selectedFilter);
 
 		const url =
 			selectedFilter !== "all"
@@ -219,6 +228,8 @@ document.addEventListener("DOMContentLoaded", () => {
 				: window.location.pathname;
 
 		history.pushState(null, "", url);
+
+		renderTodoList(filteredTodos, todosContainer);
 		updateActiveFilter(selectedFilter);
 	}
 
@@ -238,5 +249,17 @@ document.addEventListener("DOMContentLoaded", () => {
 		const todos = localStorage.getItem("TODOS");
 
 		return todos ? JSON.parse(todos) : [];
+	}
+
+	function filterTodos(todos, filter) {
+		switch (filter) {
+			case "active":
+				return todos.filter((todo) => !todo.completed);
+			case "completed":
+				return todos.filter((todo) => todo.completed);
+			case "all":
+			default:
+				return [...todos];
+		}
 	}
 });
