@@ -265,13 +265,19 @@ body {
 	border: none;
 	border-bottom: 1px solid transparent;
 	background: none;
-	transition: border-bottom 0.2s ease-in-out;
+	opacity: 0;
+	visibility: hidden;
+	transition: border-bottom 0.2s ease-in-out, opacity 0.2s ease-in-out, visibility 0.2s ease-in-out;
 }
 .footer__btn-clear-completed:hover {
 	border-bottom: 1px solid #777777;
 }
 .footer__btn-clear-completed:focus-visible {
 	outline: 2px solid var(--accent-color);
+}
+.footer__btn-clear-completed.visible {
+	opacity: 1;
+	visibility: visible;
 }
 .todo-filters {
 	display: flex;

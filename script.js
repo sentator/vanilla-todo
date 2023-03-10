@@ -5,12 +5,28 @@ document.addEventListener("DOMContentLoaded", () => {
 	const headerForm = app.querySelector(".header__form");
 	const headerTextfield = headerForm.querySelector(".header__textfield");
 	const todosContainer = app.querySelector(".todos");
+	const formFilters = app.querySelector(".footer__filters");
 
-	let todos = [];
+	let todos = getTodosFromStorage();
 
+	// getting current filter from the searchParams
+	const searchParams = new URLSearchParams(window.location.search);
+	let filter = searchParams.get("filter");
+	let activeFilter = filter || "all";
+
+	// event listeners
 	headerForm.addEventListener("submit", handleFormSubmit);
 	app.addEventListener("click", handleClickAction);
+	formFilters.addEventListener("change", handleChangeFilter);
 
+	// on first render
+	renderTodoList(todos, todosContainer);
+	updateTodosLeftInfo(todos);
+	updateTogglerCheckboxStatus(todos);
+	updateActiveFilter(activeFilter);
+	toggleClearCompletedBtn();
+
+	// functions
 	function handleFormSubmit(event) {
 		event.preventDefault();
 
@@ -22,19 +38,22 @@ document.addEventListener("DOMContentLoaded", () => {
 				value,
 				completed: false,
 			});
+			saveTodosToStorage(todos);
 			renderTodoList(todos, todosContainer);
 			updateTodosLeftInfo(todos);
 			updateTogglerCheckboxStatus(todos);
+			updateActiveFilter(activeFilter);
 			event.target.reset();
 		}
 	}
 
 	function createTodoElement(todo) {
 		const { id, value, completed } = todo;
+		const itemTodoClassames = "item-todo" + (completed ? " completed" : "");
 
 		return `
             <li class="todos__item">
-                <span class=${"item-todo" + (completed ? " completed" : "")} data-todo="${id}">
+                <span class="${itemTodoClassames}" data-todo="${id}">
                     <span class="item-todo__checkbox">
                         <span class="checkbox">
                             <input class="checkbox__input visually-hidden" type="checkbox" id="${id}" ${
@@ -107,6 +126,16 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
+	function updateActiveFilter(filter) {
+		const filterButtons = formFilters.querySelectorAll(".todo-filter__input");
+
+		filterButtons.forEach((button) => {
+			if (button.value === filter) {
+				button.checked = true;
+			}
+		});
+	}
+
 	function handleClickAction(event) {
 		const targetElement = event.target;
 
@@ -130,9 +159,10 @@ document.addEventListener("DOMContentLoaded", () => {
 					break;
 				}
 			}
-
+			saveTodosToStorage(todos);
 			updateTodosLeftInfo(todos);
 			updateTogglerCheckboxStatus(todos);
+			toggleClearCompletedBtn();
 		}
 
 		// handle click on button-remove inside an item-todo
@@ -142,9 +172,11 @@ document.addEventListener("DOMContentLoaded", () => {
 			if (confirm("Do you want to remove the todo?")) {
 				todos = todos.filter((todo) => todo.id !== id);
 
+				saveTodosToStorage(todos);
 				renderTodoList(todos, todosContainer);
 				updateTodosLeftInfo(todos);
 				updateTogglerCheckboxStatus(todos);
+				toggleClearCompletedBtn();
 			}
 		}
 
@@ -160,17 +192,51 @@ document.addEventListener("DOMContentLoaded", () => {
 				});
 			}
 
+			saveTodosToStorage(todos);
 			renderTodoList(todos, todosContainer);
 			updateTodosLeftInfo(todos);
+			toggleClearCompletedBtn();
 		}
 
 		// handle click on the footer__btn-clear-completed button
 		if (targetElement.classList.contains("footer__btn-clear-completed")) {
 			todos = todos.filter((todo) => todo.completed === false);
 
+			saveTodosToStorage(todos);
 			renderTodoList(todos, todosContainer);
 			updateTodosLeftInfo(todos);
 			updateTogglerCheckboxStatus(todos);
+			targetElement.classList.remove("visible");
 		}
+	}
+
+	function handleChangeFilter(event) {
+		const selectedFilter = event.target.value;
+
+		const url =
+			selectedFilter !== "all"
+				? `${window.location.pathname}?filter=${selectedFilter}`
+				: window.location.pathname;
+
+		history.pushState(null, "", url);
+		updateActiveFilter(selectedFilter);
+	}
+
+	function toggleClearCompletedBtn() {
+		const buttonElement = app.querySelector(".footer__btn-clear-completed");
+		todos.some((todo) => todo.completed)
+			? buttonElement.classList.add("visible")
+			: buttonElement.classList.remove("visible");
+	}
+
+	function saveTodosToStorage(todos) {
+		const json = JSON.stringify(todos);
+		localStorage.setItem("TODOS", json);
+	}
+
+	function getTodosFromStorage() {
+		const todos = localStorage.getItem("TODOS");
+
+		return todos ? JSON.parse(todos) : [];
 	}
 });
