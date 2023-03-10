@@ -17,6 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
 	headerForm.addEventListener("submit", handleFormSubmit);
 	app.addEventListener("click", handleClickAction);
 	formFilters.addEventListener("change", handleChangeFilter);
+	todosContainer.addEventListener("dblclick", handleTodoEdit);
 
 	// on first render
 	updateApp(todos);
@@ -235,5 +236,37 @@ document.addEventListener("DOMContentLoaded", () => {
 		updateTodosLeftInfo(todosList);
 		updateTogglerCheckboxStatus(todosList);
 		toggleClearCompletedBtn();
+	}
+
+	function handleTodoEdit(event) {
+		const targetElement = event.target;
+
+		if (targetElement && targetElement.matches(".item-todo")) {
+			const todoId = targetElement.getAttribute("data-todo");
+			const { value } = todos.find((todo) => todo.id === todoId);
+			const inputEditElement = document.createElement("input");
+
+			inputEditElement.setAttribute("type", "text");
+			inputEditElement.classList.add("item-todo__input-edit");
+			inputEditElement.value = value;
+
+			targetElement.append(inputEditElement);
+			targetElement.classList.add("editing");
+			inputEditElement.focus();
+
+			inputEditElement.addEventListener(
+				"blur",
+				() => {
+					const value = inputEditElement.value;
+
+					todos = todos.map((todo) => {
+						return todo.id === todoId && value ? { ...todo, value } : todo;
+					});
+					updateApp(todos);
+					targetElement.classList.remove("editing");
+				},
+				{ once: true }
+			);
+		}
 	}
 });

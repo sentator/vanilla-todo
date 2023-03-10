@@ -156,6 +156,7 @@ body {
 	font-weight: 300;
 	line-height: 120%;
 	color: var(--main-dark-color);
+	pointer-events: none;
 	transition: color 0.3s ease-in-out;
 }
 .item-todo__btn-remove {
@@ -189,7 +190,7 @@ body {
 	right: 0;
 	width: calc(100% - 65px);
 	height: 100%;
-	padding: 15px;
+	padding: 15px 12px;
 	font-size: 1.5rem;
 	font-weight: 300;
 	line-height: 120%;
@@ -222,6 +223,11 @@ body {
 	background-repeat: no-repeat;
 	cursor: pointer;
 	transition: background-image 0.2s ease-in-out;
+}
+@media (max-width: 48em) {
+	.item-todo__input-edit {
+		font-size: 1rem;
+	}
 }
 
 /* footer */
