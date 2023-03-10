@@ -54,6 +54,14 @@ document.addEventListener("DOMContentLoaded", () => {
 			completed && "checked"
 		}/>
                             <label class="checkbox__label" for="${id}"></label>
+							<button class="item-todo__remove">
+								 <svg viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+									<path
+										d="M10 8.586L2.929 1.515 1.515 2.929 8.586 10l-7.071 7.071 1.414 1.414L10 11.414l7.071 7.071 1.414-1.414L11.414 10l7.071-7.071-1.414-1.414L10 8.586z"
+										fill="currentColor"
+									/>
+								</svg>
+							</button>
                         </span>
                     </span>
                     <span class="item-todo__value">${value}</span>
@@ -160,7 +168,10 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 
 		// handle click on button-remove inside an item-todo
-		if (targetElement.classList.contains("item-todo__btn-remove")) {
+		if (
+			targetElement.classList.contains("item-todo__btn-remove") ||
+			targetElement.classList.contains("item-todo__remove")
+		) {
 			const id = targetElement.closest(".item-todo").getAttribute("data-todo");
 
 			if (confirm("Do you want to remove the todo?")) {

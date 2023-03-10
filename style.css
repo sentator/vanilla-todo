@@ -212,6 +212,9 @@ body {
 	outline: 2px solid var(--accent-color);
 	outline-offset: -2px;
 }
+.checkbox__input:focus-visible + .checkbox__label + .item-todo__remove {
+	opacity: 1;
+}
 .checkbox__label {
 	display: block;
 	width: 39px;
@@ -223,6 +226,32 @@ body {
 	background-repeat: no-repeat;
 	cursor: pointer;
 	transition: background-image 0.2s ease-in-out;
+}
+.item-todo__remove {
+	position: absolute;
+	top: 50%;
+	right: 12px;
+	transform: translateY(-50%);
+	display: block;
+	width: 16px;
+	height: 16px;
+	border: none;
+	background: none;
+	cursor: pointer;
+	color: var(--main-red-color);
+	opacity: 0;
+	pointer-events: none;
+	transition: color 0.3s ease-in-out;
+}
+.item-todo__remove svg {
+	min-width: 100%;
+	min-height: 100%;
+	color: inherit;
+	pointer-events: none;
+}
+.item-todo__remove:focus-visible {
+	opacity: 1;
+	outline: 2px solid var(--accent-color);
 }
 @media (max-width: 48em) {
 	.item-todo__input-edit {
