@@ -3,23 +3,25 @@
 document.addEventListener("DOMContentLoaded", () => {
 	const app = document.querySelector(".app");
 	const headerForm = app.querySelector(".header__form");
+	const toggleAllCheckboxElement = app.querySelector(".toggle-all__input");
 	const headerTextfield = headerForm.querySelector(".header__textfield");
 	const todosContainer = app.querySelector(".todos");
+	const footerLeftElement = app.querySelector(".footer__left");
 	const formFilters = app.querySelector(".footer__filters");
+	const filterButtons = formFilters.querySelectorAll(".todo-filter__input");
+	const clearCompletedButton = app.querySelector(".footer__btn-clear-completed");
 
 	const initialState = getTodosFromLocalStorage();
+
 	// implementing storage with an emitter-------
 	const store = new Store(initialState);
-	store.onAdd((item) => {
-		console.log("added", item);
+	store.onAdd(() => {
 		updateApp();
 	});
-	store.onChange((item) => {
-		console.log("changed", item);
+	store.onChange(() => {
 		updateApp(false);
 	});
-	store.onDelete((item) => {
-		console.log("deleted", item);
+	store.onDelete(() => {
 		updateApp();
 	});
 	// -------
@@ -114,21 +116,15 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function updateTodosLeftInfo() {
-		const footerLeftElement = app.querySelector(".footer__left");
-		const content = store._activeItemsQuantity === 1 ? "1 item left" : `${store._activeItemsQuantity} items left`;
-
-		footerLeftElement.textContent = content;
+		footerLeftElement.textContent =
+			store._activeItemsQuantity === 1 ? "1 item left" : `${store._activeItemsQuantity} items left`;
 	}
 
 	function updateTogglerCheckboxStatus() {
-		const checkboxElement = app.querySelector(".toggle-all__input");
-
-		checkboxElement.checked = store._totalItemsQuantity === store._completedItemsQuantity;
+		toggleAllCheckboxElement.checked = store._totalItemsQuantity === store._completedItemsQuantity;
 	}
 
 	function updateActiveFilter(filter) {
-		const filterButtons = formFilters.querySelectorAll(".todo-filter__input");
-
 		filterButtons.forEach((button) => {
 			if (button.value === filter) {
 				button.checked = true;
@@ -212,10 +208,9 @@ document.addEventListener("DOMContentLoaded", () => {
 	}
 
 	function toggleClearCompletedBtn() {
-		const buttonElement = app.querySelector(".footer__btn-clear-completed");
 		store._completedItemsQuantity
-			? buttonElement.classList.add("visible")
-			: buttonElement.classList.remove("visible");
+			? clearCompletedButton.classList.add("visible")
+			: clearCompletedButton.classList.remove("visible");
 	}
 
 	function saveTodosToLocalStorage() {
