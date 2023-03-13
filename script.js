@@ -7,7 +7,22 @@ document.addEventListener("DOMContentLoaded", () => {
 	const todosContainer = app.querySelector(".todos");
 	const formFilters = app.querySelector(".footer__filters");
 
-	let todos = getTodosFromStorage();
+	const initialState = getTodosFromLocalStorage();
+	// implementing storage with an emitter-------
+	const store = new Store(initialState);
+	store.onAdd((item) => {
+		console.log("added", item);
+		updateApp();
+	});
+	store.onChange((item) => {
+		console.log("changed", item);
+		updateApp(false);
+	});
+	store.onDelete((item) => {
+		console.log("deleted", item);
+		updateApp();
+	});
+	// -------
 
 	// getting current filter from the searchParams
 	const searchParams = new URLSearchParams(window.location.search);
@@ -19,8 +34,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	formFilters.addEventListener("change", handleChangeFilter);
 	todosContainer.addEventListener("dblclick", handleTodoEdit);
 
-	// on first render
-	updateApp(todos);
+	// // on first render
+	updateApp();
 	updateActiveFilter(activeFilter);
 
 	// functions
@@ -30,13 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
 		const value = headerTextfield.value;
 
 		if (value) {
-			todos.push({
+			const todo = {
 				id: Date.now().toString(),
 				value,
 				completed: false,
-			});
+			};
 
-			updateApp(todos);
+			store.add(todo);
 			event.target.reset();
 		}
 	}
@@ -78,48 +93,37 @@ document.addEventListener("DOMContentLoaded", () => {
             `;
 	}
 
-	function renderTodoList(todosList, parentElement) {
-		let ul = parentElement.querySelector(".todos__list");
+	function renderList() {
+		let ul = todosContainer.querySelector(".todos__list");
 
 		if (ul) {
 			ul.innerHTML = "";
 		} else {
 			ul = document.createElement("ul");
 			ul.classList.add("todos__list");
-			parentElement.append(ul);
+			todosContainer.append(ul);
 		}
 
-		if (todosList && todosList.length) {
-			todosList.forEach((todo) => {
-				const todoElement = createTodoElement(todo);
-				ul.insertAdjacentHTML("beforeend", todoElement);
-			});
-		}
+		const filteredList = filterTodos(store._items, activeFilter);
+		filteredList.forEach((todo) => {
+			const todoElement = createTodoElement(todo);
+			ul.insertAdjacentHTML("beforeend", todoElement);
+		});
 
-		app.setAttribute("data-empty", !todos.length);
+		app.setAttribute("data-empty", !store._totalItemsQuantity);
 	}
 
-	function updateTodosLeftInfo(todos) {
+	function updateTodosLeftInfo() {
 		const footerLeftElement = app.querySelector(".footer__left");
-		const quantity = todos.reduce((acc, todo) => {
-			if (todo.completed) {
-				return acc;
-			}
+		const content = store._activeItemsQuantity === 1 ? "1 item left" : `${store._activeItemsQuantity} items left`;
 
-			return ++acc;
-		}, 0);
-
-		if (quantity === 1) {
-			footerLeftElement.textContent = "1 item left";
-		} else {
-			footerLeftElement.textContent = `${quantity} items left`;
-		}
+		footerLeftElement.textContent = content;
 	}
 
-	function updateTogglerCheckboxStatus(todos) {
+	function updateTogglerCheckboxStatus() {
 		const checkboxElement = app.querySelector(".toggle-all__input");
 
-		checkboxElement.checked = todos.every((todo) => todo.completed);
+		checkboxElement.checked = store._totalItemsQuantity === store._completedItemsQuantity;
 	}
 
 	function updateActiveFilter(filter) {
@@ -141,30 +145,14 @@ document.addEventListener("DOMContentLoaded", () => {
 		if (targetElement.classList.contains("checkbox__input")) {
 			const id = targetElement.getAttribute("id");
 
-			for (let i = 0; i < todos.length; i++) {
-				const todo = todos[i];
+			const currentItem = store._items.find((todo) => todo.id === id);
+			const newItem = { ...currentItem, completed: !currentItem.completed };
+			store.update(newItem);
+			newItem.completed
+				? targetElement.closest(".item-todo").classList.add("completed")
+				: targetElement.closest(".item-todo").classList.remove("completed");
 
-				if (todo.id === id) {
-					todos[i] = {
-						...todo,
-						completed: !todo.completed,
-					};
-
-					todos[i].completed
-						? targetElement.closest(".item-todo").classList.add("completed")
-						: targetElement.closest(".item-todo").classList.remove("completed");
-
-					break;
-				}
-			}
-
-			const filteredTodos = filterTodos(todos, activeFilter);
-
-			activeFilter !== "all" ? renderTodoList(filteredTodos, todosContainer) : null;
-			saveTodosToStorage(todos);
-			updateTodosLeftInfo(todos);
-			updateTogglerCheckboxStatus(todos);
-			toggleClearCompletedBtn();
+			activeFilter !== "all" ? renderList() : null;
 		}
 
 		// handle click on button-remove inside an item-todo
@@ -173,36 +161,44 @@ document.addEventListener("DOMContentLoaded", () => {
 			targetElement.classList.contains("item-todo__remove")
 		) {
 			const id = targetElement.closest(".item-todo").getAttribute("data-todo");
+			const currentItem = store._items.find((todo) => todo.id === id);
 
 			if (confirm("Do you want to remove the todo?")) {
-				todos = todos.filter((todo) => todo.id !== id);
-
-				updateApp(todos);
+				store.remove(currentItem);
 			}
 		}
 
 		// handle click on the toggle-all checkbox
 		if (targetElement.classList.contains("toggle-all__input")) {
-			todos = targetElement.checked
-				? todos.map((todo) => ({ ...todo, completed: true }))
-				: todos.map((todo) => ({ ...todo, completed: false }));
+			const isChecked = targetElement.checked;
+			const inputCheckboxElements = todosContainer.querySelectorAll(".item-todo .checkbox__input");
 
-			updateApp(todos);
+			store._items.forEach((item) => {
+				store.update({ ...item, completed: isChecked });
+			});
+
+			inputCheckboxElements.forEach((checkboxElement) => {
+				checkboxElement.checked = isChecked;
+				isChecked
+					? checkboxElement.closest(".item-todo").classList.add("completed")
+					: checkboxElement.closest(".item-todo").classList.remove("completed");
+			});
+
+			activeFilter !== "all" && renderList();
 		}
 
 		// handle click on the footer__btn-clear-completed button
 		if (targetElement.classList.contains("footer__btn-clear-completed")) {
 			if (confirm("Do you want to remove competed tasks?")) {
-				todos = todos.filter((todo) => todo.completed === false);
-
-				updateApp(todos);
+				store._items.forEach((item) => {
+					item.completed && store.remove(item);
+				});
 			}
 		}
 	}
 
 	function handleChangeFilter(event) {
 		const selectedFilter = event.target.value;
-		const filteredTodos = filterTodos(todos, selectedFilter);
 
 		const url =
 			selectedFilter !== "all"
@@ -211,23 +207,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
 		history.pushState(null, "", url);
 
-		renderTodoList(filteredTodos, todosContainer);
 		updateActiveFilter(selectedFilter);
+		renderList();
 	}
 
 	function toggleClearCompletedBtn() {
 		const buttonElement = app.querySelector(".footer__btn-clear-completed");
-		todos.some((todo) => todo.completed)
+		store._completedItemsQuantity
 			? buttonElement.classList.add("visible")
 			: buttonElement.classList.remove("visible");
 	}
 
-	function saveTodosToStorage(todos) {
-		const json = JSON.stringify(todos);
+	function saveTodosToLocalStorage() {
+		const json = JSON.stringify(store._items);
 		localStorage.setItem("TODOS", json);
 	}
 
-	function getTodosFromStorage() {
+	function getTodosFromLocalStorage() {
 		const todos = localStorage.getItem("TODOS");
 
 		return todos ? JSON.parse(todos) : [];
@@ -245,13 +241,11 @@ document.addEventListener("DOMContentLoaded", () => {
 		}
 	}
 
-	function updateApp(todosList) {
-		const filteredTodos = filterTodos(todosList, activeFilter);
-
-		saveTodosToStorage(todosList);
-		renderTodoList(filteredTodos, todosContainer);
-		updateTodosLeftInfo(todosList);
-		updateTogglerCheckboxStatus(todosList);
+	function updateApp(shouldRerenderTodoList = true) {
+		saveTodosToLocalStorage();
+		shouldRerenderTodoList && renderList();
+		updateTodosLeftInfo();
+		updateTogglerCheckboxStatus();
 		toggleClearCompletedBtn();
 	}
 
@@ -261,35 +255,43 @@ document.addEventListener("DOMContentLoaded", () => {
 		const targetElement = event.target;
 
 		if (targetElement && targetElement.matches(".item-todo")) {
-			const todoId = targetElement.getAttribute("data-todo");
-			const { value } = todos.find((todo) => todo.id === todoId);
+			const id = targetElement.getAttribute("data-todo");
+			const currentItem = store._items.find((todo) => todo.id === id);
 			const formEditElement = document.createElement("form");
 			const inputEditElement = document.createElement("input");
 
 			formEditElement.classList.add("item-todo__form-edit");
 			inputEditElement.setAttribute("type", "text");
 			inputEditElement.classList.add("item-todo__input-edit");
-			inputEditElement.value = value;
+			inputEditElement.value = currentItem.value;
 
 			formEditElement.append(inputEditElement);
 			targetElement.append(formEditElement);
 			targetElement.classList.add("editing");
 			inputEditElement.focus();
 
-			const handleInputEditSubmission = (e) => {
+			const handleFormFocusOut = (e) => {
 				e.preventDefault();
 
 				const value = inputEditElement.value;
 
-				todos = todos.map((todo) => {
-					return todo.id === todoId && value ? { ...todo, value } : todo;
-				});
-				updateApp(todos);
+				if (value) {
+					store.update({ ...currentItem, value });
+					renderList();
+				} else {
+					confirm("Do you want to remove the todo?") && store.remove(currentItem);
+				}
+
 				targetElement.classList.remove("editing");
 			};
 
-			inputEditElement.addEventListener("blur", handleInputEditSubmission, { once: true });
-			formEditElement.addEventListener("submit", handleInputEditSubmission, { once: true });
+			const handleFormSubmitting = (e) => {
+				formEditElement.removeEventListener("focusout", handleFormFocusOut);
+				handleFormFocusOut(e);
+			};
+
+			formEditElement.addEventListener("submit", handleFormSubmitting, { once: true });
+			formEditElement.addEventListener("focusout", handleFormFocusOut, { once: true });
 		}
 	}
 });
