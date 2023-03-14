@@ -11,9 +11,9 @@ class EventEmitter {
 	unsubscribe(eventName, callback) {
 		this.events[eventName] = this.events[eventName].filter((eventCallback) => callback !== eventCallback);
 	}
-	emit(eventName, args) {
+	emit(eventName, ...args) {
 		const event = this.events[eventName];
-		event && event.forEach((callback) => callback.call(null, args));
+		event && event.forEach((callback) => callback.call(null, ...args));
 	}
 }
 
@@ -21,46 +21,34 @@ class Store {
 	constructor(initialState = []) {
 		this._items = initialState;
 		this._emitter = new EventEmitter();
-		this._activeItemsQuantity = initialState.reduce((acc, item) => {
-			return item.completed ? acc : ++acc;
-		}, 0);
-		this._completedItemsQuantity = initialState.reduce((acc, item) => {
-			return item.completed ? ++acc : acc;
-		}, 0);
-		this._totalItemsQuantity = initialState.length;
 	}
 
 	add(item) {
-		this._items.push(item);
-		this.updateItemsQuantity();
+		this._items = [...this._items, item];
 		this._emitter.emit("event:add_item", item);
+		this._emitter.emit("event:state_change", [...this._items]);
 	}
-	remove(item) {
-		this._items = this._items.filter((todo) => todo.id !== item.id);
-		this.updateItemsQuantity();
-		this._emitter.emit("event:remove_item", item);
-	}
-	update(item) {
-		const prevItem = this._items.find((todo) => todo.id === item.id);
-		this._items = this._items.map((todo) => (todo.id === item.id ? item : todo));
-		this.updateItemsQuantity();
-		this._emitter.emit("event:update_item", { prevVal: prevItem, newVal: item });
-	}
-	updateItemsQuantity() {
-		const { activeItems, completedItems } = this._items.reduce(
-			(acc, item) => {
-				item.completed ? acc.completedItems++ : acc.activeItems++;
-				return acc;
-			},
-			{
-				activeItems: 0,
-				completedItems: 0,
-			}
-		);
+	remove(filterCallback) {
+		const oldItems = [...this._items];
+		this._items = this._items.filter(filterCallback);
+		const deletedItems = oldItems.filter((item) => !this._items.includes(item));
 
-		this._activeItemsQuantity = activeItems;
-		this._completedItemsQuantity = completedItems;
-		this._totalItemsQuantity = activeItems + completedItems;
+		this._emitter.emit("event:remove_item", deletedItems);
+		this._emitter.emit("event:state_change", [...this._items]);
+	}
+	update(updatedItems) {
+		const updatedItemsObj = updatedItems.reduce((acc, item) => {
+			acc[item.id] = item;
+			return acc;
+		}, {});
+		this._items = this._items.map((item) => {
+			const updatedItem = updatedItemsObj[item.id];
+
+			return updatedItem ? updatedItem : item;
+		});
+
+		this._emitter.emit("event:update_item", updatedItems);
+		this._emitter.emit("event:state_change", [...this._items]);
 	}
 
 	onAdd(handler) {
@@ -71,5 +59,8 @@ class Store {
 	}
 	onChange(handler) {
 		this._emitter.subscribe("event:update_item", handler);
+	}
+	onStateChange(handler) {
+		this._emitter.subscribe("event:state_change", handler);
 	}
 }
